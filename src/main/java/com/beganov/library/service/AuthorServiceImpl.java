@@ -1,24 +1,24 @@
 package com.beganov.library.service;
 
+import com.beganov.library.model.Author;
 import com.beganov.library.model.Book;
 import com.beganov.library.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-public class BookServiceImpl implements BookService {
+public class AuthorServiceImpl implements AuthorService{
 
     @Override
-    public Long save(Book book) {
-
+    public Long saveAuthor(Author author) {
         Transaction transaction = null;
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
 
-            session.persist(book);//save
+            session.persist(author);//save
 
             transaction.commit();
-            return book.getId();
+            return author.getId();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
@@ -26,27 +26,28 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Book getById(Long id) {
+    public Author getById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.find(Book.class, id);//get
+            return session.find(Author.class, id);//get
         }
     }
 
     @Override
-    public Book update(Long id, String title, String author) {
+    public Author updateAuthor(Long id, Long newId, String name) {
         Transaction tx = null;
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
-            Book book = session.find(Book.class, id);//find - найди
-            if (book != null) {
-                book.setTitle(title);
-                session.merge(book);//update
+            Author author = session.find(Author.class, id);//find - найди
+            if (author != null) {
+                author.setId(newId);
+                author.setName(name);
+                session.merge(author);//update
             }
 
             tx.commit();
-            return book;
+            return author;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;
@@ -60,12 +61,12 @@ public class BookServiceImpl implements BookService {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
-            Book book = session.find(Book.class, id);
-            if (book != null) {
-                session.remove(book);
+            Author author = session.find(Author.class, id);
+            if (author != null) {
+                session.remove(author);
             }
             tx.commit();
-            return "Товарищ session удалил книгу по id: " + id;
+            return "Товарищ session удалил автора с id: " + id;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;

@@ -1,5 +1,6 @@
 package com.beganov.library.util;
 
+import com.beganov.library.model.Author;
 import com.beganov.library.model.Book;
 import lombok.NoArgsConstructor;
 import org.hibernate.SessionFactory;
@@ -14,6 +15,7 @@ public class HibernateUtil {
         try {
             return new Configuration()
                     .addAnnotatedClass(Book.class)
+                    .addAnnotatedClass(Author.class)
                     .buildSessionFactory();
         } catch (Exception e) {
             throw new RuntimeException("Ошибка создания SessionFactory", e);

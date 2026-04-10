@@ -20,11 +20,12 @@ public class Book {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "author", nullable = false )//not null
-    private String author;
+    // @Column(nullable = false )//not null
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    private Author author;
 
-    public Book(String title, String author) {
+    public Book(String title) {
         this.title = title;
-        this.author = author;
     }
 }
