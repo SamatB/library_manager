@@ -1,24 +1,26 @@
-package com.beganov.library.service;
+package com.beganov.library.service.impl;
 
 import com.beganov.library.model.Author;
-import com.beganov.library.model.Book;
+import com.beganov.library.model.Category;
+import com.beganov.library.service.CategoryService;
 import com.beganov.library.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-public class AuthorServiceImpl implements AuthorService{
+import java.util.List;
 
+public class CategoryServiceImpl implements CategoryService {
     @Override
-    public Long saveAuthor(Author author) {
+    public Long save(Category category) {
         Transaction transaction = null;
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
 
-            session.persist(author);//save
+            session.persist(category);//save
 
             transaction.commit();
-            return author.getId();
+            return category.getId();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
@@ -26,28 +28,33 @@ public class AuthorServiceImpl implements AuthorService{
     }
 
     @Override
-    public Author getById(Long id) {
+    public Category getById(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.find(Author.class, id);//get
+            return session.find(Category.class, id);//get
         }
     }
 
     @Override
-    public Author updateAuthor(Long id, Long newId, String name) {
+    public List<Category> getAllCategories() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("select c from Category c", Category.class).list();//get
+        }
+    }
+
+    @Override
+    public Category update(Long id, String newName) {
         Transaction tx = null;
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
-            Author author = session.find(Author.class, id);//find - найди
-            if (author != null) {
-                author.setId(newId);
-                author.setName(name);
-                session.merge(author);//update
+            Category category = session.find(Category.class, id);//find - найди
+            if (category != null) {
+                category.setName(newName);
             }
-
             tx.commit();
-            return author;
+            return category;
+
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;
@@ -61,12 +68,13 @@ public class AuthorServiceImpl implements AuthorService{
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
-            Author author = session.find(Author.class, id);
-            if (author != null) {
-                session.remove(author);
+            Category category = session.find(Category.class, id);
+            if (category != null) {
+                session.remove(category);
             }
             tx.commit();
-            return "Товарищ session удалил автора с id: " + id;
+            return "Товарищ session удалил категорию с id: " + id;
+
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw e;
