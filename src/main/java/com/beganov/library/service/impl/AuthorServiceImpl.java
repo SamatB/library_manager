@@ -2,6 +2,8 @@ package com.beganov.library.service.impl;
 
 import com.beganov.library.model.Author;
 import com.beganov.library.model.Book;
+import com.beganov.library.model.Category;
+import com.beganov.library.model.Profile;
 import com.beganov.library.service.AuthorService;
 import com.beganov.library.util.HibernateUtil;
 import org.hibernate.Session;
@@ -13,51 +15,166 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public Long saveAuthor(Author author) {
-        Transaction transaction = null;
+        Transaction tx = null;
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
+            tx = session.beginTransaction();
 
-            session.persist(author);//save
+            session.persist(author);
 
-            transaction.commit();
+            tx.commit();
             return author.getId();
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public Long saveAuthorWithBooks(
+            String fullName,
+            String email,
+            String bio,
+            List<BookDraft> books
+    ) {
+        Transaction tx = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+
+            Author author = new Author();
+            author.setFullName(fullName);
+
+            if (email != null) {
+                Profile profile = new Profile();
+                profile.setEmail(email);
+                profile.setBio(bio);
+                author.setProfile(profile);
+            }
+
+            if (books != null) {
+                for (BookDraft draft : books) {
+                    Book book = new Book();
+                    book.setTitle(draft.title());
+
+                    if (draft.categoryIds() != null) {
+                        for (Long categoryId : draft.categoryIds()) {
+                            Category category = session.find(Category.class, categoryId);
+                            if (category == null) {
+                                throw new IllegalArgumentException("Категория не найдена: " + categoryId);
+                            }
+                            book.addCategory(category);
+                        }
+                    }
+
+                    author.addBook(book);
+                }
+            }
+
+            session.persist(author);
+
+            tx.commit();
+            return author.getId();
+        } catch (Exception e) {
+            if (tx != null) {
+                tx.rollback();
+            }
             throw e;
         }
     }
 
     @Override
     public Author getById(Long id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.find(Author.class, id);//get
-        }
-    }
-
-    @Override
-    public List<Author> getAllAuthors() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select a from Author a", Author.class).list();//get
-        }
-    }
-
-    @Override
-    public Author updateAuthor(Long id, String newFullName) {
         Transaction tx = null;
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
-            Author author = session.find(Author.class, id);//find - найди
-            if (author != null) {
-                author.setFullName(newFullName);
-            }
+            Author author = session.find(Author.class, id);
+
             tx.commit();
             return author;
-
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            throw e;
+        }
+    }
+
+    @Override
+    public List<Author> getAllAuthors() {
+        Transaction tx = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+
+            List<Author> authors = session.createQuery(
+                    "select a from Author a",
+                    Author.class
+            ).list();
+
+            tx.commit();
+            return authors;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public Author updateAuthor(Long id, String fullName) {
+        Transaction tx = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+
+            Author author = session.find(Author.class, id);
+            if (author != null) {
+                author.setFullName(fullName);
+            }
+
+            tx.commit();
+            return author;
+        } catch (Exception e) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public Long addBookToAuthor(Long authorId, String title, List<Long> categoryIds) {
+        Transaction tx = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+
+            Author author = session.find(Author.class, authorId);
+            if (author == null) {
+                throw new IllegalArgumentException("Автор не найден: " + authorId);
+            }
+
+            Book book = new Book();
+            book.setTitle(title);
+
+            if (categoryIds != null) {
+                for (Long categoryId : categoryIds) {
+                    Category category = session.find(Category.class, categoryId);
+                    if (category == null) {
+                        throw new IllegalArgumentException("Категория не найдена: " + categoryId);
+                    }
+                    book.addCategory(category);
+                }
+            }
+
+            author.addBook(book);
+
+            tx.commit();
+            return book.getId();
+        } catch (Exception e) {
+            if (tx != null) {
+                tx.rollback();
+            }
             throw e;
         }
     }
@@ -73,46 +190,9 @@ public class AuthorServiceImpl implements AuthorService {
             if (author != null) {
                 session.remove(author);
             }
-            tx.commit();
-            return "Товарищ session удалил автора с id: " + id;
-
-        } catch (Exception e) {
-            if (tx != null) tx.rollback();
-            throw e;
-        }
-    }
-
-    @Override
-    public Author assignBook(Long authorId, Long bookId) {
-        Transaction tx = null;
-
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            tx = session.beginTransaction();
-
-            Author newAuthor = session.find(Author.class, authorId);
-            Book book = session.find(Book.class, bookId);
-
-            if (newAuthor == null) {
-                throw new IllegalArgumentException("Автор не найден: " + authorId);
-            }
-
-            if (book == null) {
-                throw new IllegalArgumentException("Книга не найдена: " + bookId);
-            }
-
-            Author oldAuthor = book.getAuthor();
-            if (oldAuthor != null && oldAuthor != newAuthor) {
-                oldAuthor.getBooks().remove(book);
-            }
-
-            if (!newAuthor.getBooks().contains(book)) {
-                newAuthor.getBooks().add(book);
-            }
-
-            book.setAuthor(newAuthor);
 
             tx.commit();
-            return newAuthor;
+            return "Автор удален с id: " + id;
         } catch (Exception e) {
             if (tx != null) {
                 tx.rollback();

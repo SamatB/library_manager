@@ -1,6 +1,5 @@
 package com.beganov.library.service.impl;
 
-import com.beganov.library.model.Author;
 import com.beganov.library.model.Category;
 import com.beganov.library.service.CategoryService;
 import com.beganov.library.util.HibernateUtil;
@@ -10,6 +9,7 @@ import org.hibernate.Transaction;
 import java.util.List;
 
 public class CategoryServiceImpl implements CategoryService {
+
     @Override
     public Long save(Category category) {
         Transaction transaction = null;
@@ -29,15 +29,36 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category getById(Long id) {
+        Transaction tx = null;
+
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.find(Category.class, id);//get
+            tx = session.beginTransaction();
+
+            Category category = session.find(Category.class, id);
+
+            tx.commit();
+            return category;
+        } catch (Exception e) {
+            throw e;
         }
     }
 
     @Override
     public List<Category> getAllCategories() {
+        Transaction tx = null;
+
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select c from Category c", Category.class).list();//get
+            tx = session.beginTransaction();
+
+            List<Category> categories = session.createQuery(
+                    "select c from Category c",
+                    Category.class
+            ).list();
+
+            tx.commit();
+            return categories;
+        } catch (Exception e) {
+            throw e;
         }
     }
 

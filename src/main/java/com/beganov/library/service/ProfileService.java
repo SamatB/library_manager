@@ -10,7 +10,7 @@ public interface ProfileService {
 
     Profile getById(Long id);
 
-    List<Profile> getAllCategories();
+    List<Profile> getAllProfiles();
 
     Profile updateEmail(Long id, String newEmail);
 

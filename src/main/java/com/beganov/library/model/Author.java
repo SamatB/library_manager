@@ -25,7 +25,7 @@ public class Author {
     @Column(nullable = false)
     private String fullName;
 
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Book> books = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL)
@@ -36,7 +36,7 @@ public class Author {
         this.fullName = fullName;
     }
 
-    public void add(Book book) {
+    public void addBook(Book book) {
         if (!books.contains(book)) {
             books.add(book);
         }

@@ -1,6 +1,5 @@
 package com.beganov.library.service.impl;
 
-import com.beganov.library.model.Author;
 import com.beganov.library.model.Profile;
 import com.beganov.library.service.ProfileService;
 import com.beganov.library.util.HibernateUtil;
@@ -10,34 +9,58 @@ import org.hibernate.Transaction;
 import java.util.List;
 
 public class ProfileServiceImpl implements ProfileService {
+
     @Override
     public Long save(Profile profile) {
-        Transaction transaction = null;
+        Transaction tx = null;
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
+            tx = session.beginTransaction();
 
-            session.persist(profile);//save
+            session.persist(profile);
 
-            transaction.commit();
+            tx.commit();
             return profile.getId();
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             throw e;
         }
     }
 
     @Override
     public Profile getById(Long id) {
+        Transaction tx = null;
+
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.find(Profile.class, id);//get
+            tx = session.beginTransaction();
+
+            Profile profile = session.find(Profile.class, id);
+
+            tx.commit();
+            return profile;
+        } catch (Exception e) {
+            throw e;
         }
     }
 
     @Override
-    public List<Profile> getAllCategories() {
+    public List<Profile> getAllProfiles() {
+        Transaction tx = null;
+
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("select p from Profile p", Profile.class).list();//get
+            tx = session.beginTransaction();
+
+            List<Profile> profiles = session.createQuery(
+                    "select p from Profile p",
+                    Profile.class
+            ).list();
+
+            tx.commit();
+            return profiles;
+        } catch (Exception e) {
+            throw e;
         }
     }
 
@@ -48,15 +71,17 @@ public class ProfileServiceImpl implements ProfileService {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
-            Profile profile = session.find(Profile.class, id);//find - найди
+            Profile profile = session.find(Profile.class, id);
             if (profile != null) {
                 profile.setEmail(newEmail);
             }
+
             tx.commit();
             return profile;
-
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             throw e;
         }
     }
@@ -68,15 +93,17 @@ public class ProfileServiceImpl implements ProfileService {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
-            Profile profile = session.find(Profile.class, id);//find - найди
+            Profile profile = session.find(Profile.class, id);
             if (profile != null) {
                 profile.setBio(newBio);
             }
+
             tx.commit();
             return profile;
-
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             throw e;
         }
     }
@@ -84,6 +111,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public String delete(Long id) {
         Transaction tx = null;
+
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
@@ -91,10 +119,13 @@ public class ProfileServiceImpl implements ProfileService {
             if (profile != null) {
                 session.remove(profile);
             }
+
             tx.commit();
-            return "Товарищ session удалил автора с id: " + id;
+            return "Профиль удален с id: " + id;
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             throw e;
         }
     }

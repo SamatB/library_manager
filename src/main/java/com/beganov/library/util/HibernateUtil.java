@@ -31,6 +31,8 @@ public class HibernateUtil {
     }
 
     public static void shutdown() {
-        SESSION_FACTORY.close();
+        if (SESSION_FACTORY != null) {
+            SESSION_FACTORY.close();
+        }
     }
 }
