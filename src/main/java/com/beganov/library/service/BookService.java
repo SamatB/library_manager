@@ -17,4 +17,12 @@ public interface BookService {
     Book changeAuthor(Long bookId, Long newAuthorId);
 
     String delete(Long id);
+
+    List<Book> findByTitle(String name);
+
+    List<Book> findByAuthor(String authorName);
+
+    List<Book> findByCategory(String category);
+
+    List<Book> findAllWithAuthor();
 }

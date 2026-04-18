@@ -148,4 +148,80 @@ public class BookServiceImpl implements BookService {
             throw e;
         }
     }
+
+    @Override
+    public List<Book> findByTitle(String name) {
+        Transaction tx = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+
+            List<Book> books = session.createQuery(
+                            "select b from Book b where b.title = :muha", Book.class)
+                    .setParameter("muha", name)
+                    .list();
+
+            tx.commit();
+            return books;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public List<Book> findByAuthor(String authorName) {
+        Transaction tx = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+
+            List<Book> books = session.createQuery(
+                            "select b from Book b where b.author.fullName = :authorName", Book.class)
+                    .setParameter("authorName", authorName)
+                    .list();
+
+            tx.commit();
+            return books;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public List<Book> findByCategory(String category) {
+        Transaction tx = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+
+            List<Book> books = session.createQuery(
+                            "select b from Book b join b.categories c where c.name = :category", Book.class)
+                    .setParameter("category", category)
+                    .list();
+
+            tx.commit();
+            return books;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public List<Book> findAllWithAuthor() {
+        Transaction tx = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+
+            List<Book> books = session.createQuery(
+                    "select b from Book b join fetch b.author",
+                    Book.class
+            ).list();
+
+            tx.commit();
+            return books;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
 }

@@ -1,7 +1,6 @@
 package com.beganov.library.service;
 
 import com.beganov.library.model.Author;
-import com.beganov.library.model.Book;
 
 import java.util.List;
 
@@ -23,6 +22,7 @@ public interface AuthorService {
     Author updateAuthor(Long id, String fullName);
 
     Long addBookToAuthor(Long authorId, String title, List<Long> categoryIds);
+    Author addExistingBookToAuthor(Long authorId, Long bookId);
 
     String delete(Long id);
 
@@ -30,8 +30,8 @@ public interface AuthorService {
      * Это вложенный record в интерфейсе AuthorService.
      * Он нужен как простая структура данных для передачи параметров книги при создании автора вместе с книгами.
      * То есть, вместо того чтобы передавать отдельно:
-     *  - title
-     *  - categoryIds
+     * - title
+     * - categoryIds
      * мы объединяем их в один объект.
      */
     record BookDraft(String title, List<Long> categoryIds) {

@@ -28,7 +28,7 @@ public class Book {
     private String title;
 
     // @Column(nullable = false )//not null
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")
     private Author author;
 
@@ -58,6 +58,7 @@ public class Book {
 
     @Override
     public String toString() {
-        return "Book{id=%d, title='%s'}".formatted(id, title);
+        String authorName = (author != null) ? author.getFullName() : "no author";
+        return "Book{id=%d, title='%s', author='%s'}".formatted(id, title, authorName);
     }
 }

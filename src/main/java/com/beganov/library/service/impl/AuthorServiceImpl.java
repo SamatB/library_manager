@@ -180,6 +180,39 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    public Author addExistingBookToAuthor(Long authorId, Long bookId) {
+        Transaction tx = null;
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+
+            Author author = session.find(Author.class, authorId);
+            if (author == null) {
+                throw new IllegalArgumentException("Автор не найден: " + authorId);
+            }
+
+            Book book = session.find(Book.class, bookId);
+            if (book == null) {
+                throw new IllegalArgumentException("Книга не найдена: " + bookId);
+            }
+
+            if (book.getAuthor() != null) {
+                throw new IllegalArgumentException("У книги есть автор и его зовут: " + book.getAuthor().getFullName());
+            }
+
+            author.addBook(book);
+
+            tx.commit();
+            return author;
+        } catch (Exception e) {
+            if (tx != null) {
+                tx.rollback();
+            }
+            throw e;
+        }
+    }
+
+    @Override
     public String delete(Long id) {
         Transaction tx = null;
 
