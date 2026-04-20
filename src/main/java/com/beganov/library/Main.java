@@ -204,15 +204,19 @@ public class Main {
 //            System.out.println(profileService.getAllProfiles());
 
             //найти книги по названию
-            System.out.println("Книги по ключу: " + " 1984 -> " + bookService.findByTitle("1984"));
-
-            System.out.println(bookService.findByAuthor("J. K. Rowling"));
-            System.out.println("==========================");
-            System.out.println(bookService.findByAuthor("George Orwell"));
-            System.out.println("====по категории=====");
-            System.out.println(bookService.findByCategory("Dystopia"));
-            System.out.println("====найти книги с автором====");
-            System.out.println("Книги с автором " + bookService.findAllWithAuthor());
+//            System.out.println("Книги по ключу: " + " 1984 -> " + bookService.findByTitle("1984"));
+//
+//            System.out.println(bookService.findByAuthor("J. K. Rowling"));
+//            System.out.println("==========================");
+//            System.out.println(bookService.findByAuthor("George Orwell"));
+//            System.out.println("====по категории=====");
+//            System.out.println(bookService.findByCategory("Dystopia"));
+//            System.out.println("====найти книги с автором====");
+//            System.out.println("Книги с автором " + bookService.findAllWithAuthor());
+            System.out.println("=============N+1==============");
+            for (Author author : authorService.getAllAuthors()) {
+                System.out.println(author);
+            }
 
         } finally {
             HibernateUtil.shutdown();
